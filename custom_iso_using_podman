@@ -1,0 +1,57 @@
+---
+- name: Check and Install Podman, Download and Customize ISO
+  hosts: localhost
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Check if Podman is installed
+      command: podman --version
+      register: podman_check
+      ignore_errors: true
+
+    - name: Install Podman if not present
+      package:
+        name: podman
+        state: present
+      when: podman_check.rc != 0
+
+    - name: Download the CoreOS image
+      get_url:
+        url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.11/latest/rhcos-live.x86_64.iso"
+        dest: "./rhcos-live.x86_64.iso"
+
+    - name: Download worker ignition
+      get_url:
+        url: "https://10.25.54.215:8080/ocp4/worker.ign"
+        dest: "./worker.ign"
+
+    - name: Pull coreos-installer package using podman
+      command: podman pull quay.io/coreos/coreos-installer:latest
+
+    - name: ISO Customization
+      command: >
+        podman run --rm --tty --interactive
+        --volume ${PWD}:/data:z
+        --workdir /data
+        quay.io/coreos/coreos-installer:latest
+        iso customize --dest-device /dev/sda --dest-ignition ./worker.ign --network-keyfile ./ens192.nmconnection --append-karg "coreos.insecure=true  ./rhcos-live.x86_64.iso -o custom_live.iso
+      register: iso_customize_output
+
+    - name: Display the Container ID
+      debug:
+        var: iso_customize_output.stdout_lines
+
+    - name: Fail if ISO customization is not successful
+      fail:
+        msg: "ISO customization failed"
+      when: iso_customize_output.rc != 0
+
+    - name: Copy the ISO to localhost
+      command: podman cp {{ iso_customize_output.stdout_lines[0] }}:/data/custom_live.iso /
+      
+    - name: Download the ISO from localhost to local machine
+      fetch:
+        src: "/custom_live.iso"
+        dest: "C:\ISO"
+        flat: yes
+      delegate_to: localhost
