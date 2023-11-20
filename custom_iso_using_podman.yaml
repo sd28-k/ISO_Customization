@@ -49,9 +49,3 @@
     - name: Copy the ISO to localhost
       command: podman cp {{ iso_customize_output.stdout_lines[0] }}:/data/custom_live.iso /
       
-    - name: Download the ISO from localhost to local machine
-      fetch:
-        src: "/custom_live.iso"
-        dest: "C:\ISO"
-        flat: yes
-      delegate_to: localhost
