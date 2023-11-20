@@ -4,6 +4,17 @@
   become: true
 
   tasks:
+    - name: Check if Podman is installed
+      command: podman --version
+      register: podman_version
+      ignore_errors: true
+
+    - name: Install Podman
+      package:
+        name: podman
+        state: present
+      when: podman_version.rc != 0
+      
     - name: Pull butane package
       command: podman pull quay.io/coreos/butane:release
       
@@ -17,7 +28,6 @@
       template:
         src: worker.bu.j2 
         dest: /data/worker.bu
-      notify: Run CoreOS Installer
 
     - name: Generate ignition from butane config
       command: podman run --rm --tty --interactive  --volume ${PWD}:/pwd:z --workdir /pwd  quay.io/coreos/butane:release --pretty --strict --raw /data/worker.bu > /data/custom-worker.ign
