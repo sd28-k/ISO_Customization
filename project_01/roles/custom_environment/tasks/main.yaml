@@ -1,6 +1,6 @@
 ---
 - name: Run CoreOS Installer in Custom Execution Environment
-  hosts: localhost
+  hosts: custom_environment
   become: true
 
   tasks:
