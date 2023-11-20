@@ -1,0 +1,26 @@
+---
+- name: Run CoreOS Installer in Custom Execution Environment
+  hosts: localhost
+  become: true
+
+  tasks:
+    - name: Pull butane package
+      command: podman pull quay.io/coreos/butane:release
+      
+    - name: Pull CoreOS Installer Image
+      command: podman pull quay.io/coreos/coreos-installer:release
+      
+    - name: Download RHCOS Live RootFS Image
+      command: curl -o /data/rhcos-live.x86_64.iso https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.11/latest/rhcos-live.x86_64.iso
+
+    - name: Create Butane Config File
+      template:
+        src: worker.bu.j2 
+        dest: /data/worker.bu
+      notify: Run CoreOS Installer
+
+    - name: Generate ignition from butane config
+      command: podman run --rm --tty --interactive  --volume ${PWD}:/pwd:z --workdir /pwd  quay.io/coreos/butane:release --pretty --strict --raw /data/worker.bu > /data/custom-worker.ign
+    
+    - name: Create Podman Container
+      command: podman run --rm --tty --interactive --volume ${PWD}:/data:z --workdir /data quay.io/coreos/coreos-installer:release iso ignition embed -i /data/custom-worker.ign /data/rhcos-live.x86_64.iso -o /data/custom-rhcos-live.iso
