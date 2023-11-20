@@ -1,0 +1,38 @@
+variant: openshift
+version: 4.11.47
+metadata:
+  name: 99-worker-dummy
+  labels:
+    machineconfiguration.openshift.io/role: worker
+storage:
+  files:
+    - path: /coreos.inst.ignition_url
+      mode: 0644
+      contents:
+        inline: http://10.25.54.215:8080/ocp4/worker.ign
+
+    - path: /etc/coreos-install.conf
+      mode: 0644
+      contents:
+        inline: |
+          [Ignition]
+          firstboot = true
+          platform_id = metal
+
+          [Network]
+          ip = 10.25.54.57::10.25.54.1:255.255.255.0:ocp4-worker-bm.lab.ocp.local:enp55s1f8:none
+          nameserver = 10.25.54.215
+          nameserver = 10.25.52.51
+          nameserver = 10.25.52.50
+
+          [Installation]
+          install_dev = /dev/sda
+
+          [LiveOS]
+          rootfs_url = http://10.25.54.215:8080/ocp4/rhcos-live-rootfs.x86_64.img
+
+          [Initramfs]
+          url = http://10.25.54.215:8080/ocp4/rhcos-live-initramfs.x86_64.img
+
+          [Inst]
+          insecure = yes
