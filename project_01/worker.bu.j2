@@ -1,5 +1,9 @@
 variant: openshift
-
+version: 4.11.47
+metadata:
+  name: 99-worker-dummy
+  labels:
+    machineconfiguration.openshift.io/role: worker
 storage:
   files:
     - path: /coreos.inst.ignition_url
