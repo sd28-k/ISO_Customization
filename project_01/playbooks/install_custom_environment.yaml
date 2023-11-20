@@ -2,5 +2,6 @@
 - name: Run CoreOS Installer
   hosts: localhost
   gather_facts: false
+  become: true
   roles:
     - custom_environment
