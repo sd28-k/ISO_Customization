@@ -21,7 +21,7 @@
     - name: Pull CoreOS Installer Image
       command: podman pull quay.io/coreos/coreos-installer:release
       
-    - name: Download RHCOS Live RootFS Image
+    - name: Download RHCOS Live ISO Image
       command: curl -o /data/rhcos-live.x86_64.iso https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.11/latest/rhcos-live.x86_64.iso
 
     - name: Create Butane Config File
