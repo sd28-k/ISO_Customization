@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  gather-facts: false
+  tasks:
+  - name: Fetching ignition file from another repo under same org
+    ansible.builtin.copy:
+      src: "Openshift_Ignition_Repo/worker-1.ign"
+      dest: "/home/cloud-user/dummy1-worker-1.ign"
+      mode: 0644
